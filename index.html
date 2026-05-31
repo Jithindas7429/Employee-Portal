@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Employee Portal</title>
     
-    <!-- OneSignal Web Push SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignal.SDK.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "17637010-2c59-46b5-88fb-9379dd943cef",
-          notifyButton: { enable: true } 
+          notifyButton: { enable: true },
+          
+          // ---> ഇതാണ് GitHub Pages-ലെ ഫോൾഡർ പ്രശ്നം മാറ്റാനുള്ള മാജിക് കോഡ് <---
+          serviceWorkerParam: { scope: '/Employee-Portal/' },
+          serviceWorkerPath: '/Employee-Portal/OneSignalSDKWorker.js'
         });
         OneSignal.Slidedown.promptPush();
       });
@@ -29,29 +32,25 @@
 </head>
 <body>
     
-    <!-- ഗൂഗിൾ സ്ക്രിപ്റ്റ് നേരിട്ട് റീഡയറക്ട് ചെയ്യുന്നതിന് പകരം ഫുൾ സ്ക്രീൻ Iframe-ൽ കാണിക്കുന്നു -->
     <iframe id="appFrame" src="https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec"></iframe>
 
     <script>
-        // ഗൂഗിൾ സ്ക്രിപ്റ്റിൽ നിന്നും 'REGISTER_TOKEN' എന്ന മെസ്സേജ് വരുമ്പോൾ പ്രവർത്തിക്കുന്ന സ്മാർട്ട് കോഡ്
         window.addEventListener('message', function(event) {
             if (event.data && event.data.type === 'REGISTER_TOKEN') {
                 
-                // OneSignal-ൽ നിന്നും ടോക്കൺ എടുക്കുന്നു
                 let token = OneSignal.User.PushSubscription.id;
                 
-                if (token) {
-                    // സ്മാർട്ട് ചെക്കിങ്: Chrome-ൽ ടോക്കൺ മാറിയിട്ടുണ്ടോ എന്ന് നോക്കുന്നു
-                    let savedToken = localStorage.getItem("syncedTokenWeb");
-                    
-                    if (token !== savedToken) {
-                        // പുതിയ ടോക്കൺ ആണെങ്കിൽ ഫോണിൽ സേവ് ചെയ്ത ശേഷം Iframe-ലേക്ക് ടോക്കൺ കൈമാറുന്നു
-                        localStorage.setItem("syncedTokenWeb", token);
-                        let gasUrl = "https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec";
-                        document.getElementById('appFrame').src = gasUrl + "?token=" + token;
-                    } else {
-                        console.log("Web Token unchanged. Skipping Sheet update.");
-                    }
+                // ടോക്കൺ ഇല്ലെങ്കിൽ (സബ്സ്ക്രൈബ് ആയിട്ടില്ലെങ്കിൽ) വെറുതെ ഷീറ്റിലേക്ക് അയക്കുന്നത് തടയുന്നു!
+                if (!token) return;
+                
+                let savedToken = localStorage.getItem("syncedTokenWeb");
+                
+                if (token !== savedToken) {
+                    localStorage.setItem("syncedTokenWeb", token);
+                    let gasUrl = "https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec";
+                    document.getElementById('appFrame').src = gasUrl + "?token=" + token;
+                } else {
+                    console.log("Web Token unchanged. Skipping Sheet update.");
                 }
             }
         });
