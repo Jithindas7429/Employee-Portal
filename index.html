@@ -12,11 +12,12 @@
         await OneSignal.init({
           appId: "17637010-2c59-46b5-88fb-9379dd943cef",
           
-          // ---> ബെൽ ഐക്കൺ ഓഫ് ചെയ്തു, ഇനി ഇടയ്ക്കിടെ മെസ്സേജ് വരില്ല! <---
+          // ബെൽ ഐക്കൺ ഓഫ് ചെയ്തു വെച്ചിരിക്കുന്നു
           notifyButton: { enable: false }, 
           
-          serviceWorkerParam: { scope: '/Employee-Portal/' },
-          serviceWorkerPath: '/Employee-Portal/OneSignalSDKWorker.js'
+          // ---> ഇതാണ് GitHub Pages-ന് വേണ്ടിയുള്ള ഏറ്റവും കൃത്യമായ പാത്ത് (Relative Path) <---
+          serviceWorkerParam: { scope: './' },
+          serviceWorkerPath: 'OneSignalSDKWorker.js'
         });
         OneSignal.Slidedown.promptPush();
       });
@@ -36,26 +37,21 @@
     <iframe id="appFrame" src="https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec"></iframe>
 
     <script>
-        // സ്മാർട്ട് ടോക്കൺ ഹാൻഡ്‌ലർ
         window.addEventListener('message', function(event) {
             if (event.data && event.data.type === 'REGISTER_TOKEN') {
                 
-                // OneSignal പക്കാ ആയി ലോഡ് ആവാൻ ഒരു 2 സെക്കൻഡ് വെയിറ്റ് ചെയ്യുന്നു (Token ലൂപ്പ് ഒഴിവാക്കാൻ)
                 setTimeout(function() {
                     let token = null;
                     if (window.OneSignal && window.OneSignal.User && window.OneSignal.User.PushSubscription) {
                         token = window.OneSignal.User.PushSubscription.id;
                     }
                     
-                    // ടോക്കൺ കിട്ടിയാൽ മാത്രം ചെക്ക് ചെയ്യുന്നു
                     if (token) {
                         let savedToken = localStorage.getItem("syncedTokenWeb");
                         
-                        // ഫോണിൽ സേവ് ചെയ്ത ടോക്കണും പുതിയതും ഒന്നാണോ എന്ന് നോക്കുന്നു
                         if (token !== savedToken) {
                             localStorage.setItem("syncedTokenWeb", token);
                             let gasUrl = "https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec";
-                            // പുതിയ ടോക്കൺ ആണെങ്കിൽ മാത്രം Iframe റീലോഡ് ചെയ്യും
                             document.getElementById('appFrame').src = gasUrl + "?token=" + token;
                         }
                     }
