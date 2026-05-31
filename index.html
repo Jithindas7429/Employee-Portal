@@ -1,49 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Employee Portal</title>
     
-    <!-- ഇത് തനിയെ നിങ്ങളുടെ യഥാർത്ഥ ഗൂഗിൾ ലിങ്കിലേക്ക് കൊണ്ടുപോകും -->
-    <meta http-equiv="refresh" content="0; url=https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec">
-    
+    <!-- OneSignal Web Push SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignal.SDK.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "17637010-2c59-46b5-88fb-9379dd943cef",
+          notifyButton: { enable: true } 
+        });
+        OneSignal.Slidedown.promptPush();
+      });
+    </script>
+
     <style>
-        body {
-            background-color: #0a0e1a;
-            color: #00d2ff;
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: #1a2a6c;
         }
-        .spinner {
-            width: 50px; 
-            height: 50px;
-            border: 5px solid rgba(0, 210, 255, 0.2);
-            border-top: 5px solid #00d2ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px auto;
+        iframe {
+            width: 100%; height: 100%; border: none;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div>
-        <div class="spinner"></div>
-        <h2>Loading Portal...</h2>
-        <p style="font-size: 13px; color: #ccc;">Redirecting to secure server...</p>
-    </div>
+    
+    <!-- ഗൂഗിൾ സ്ക്രിപ്റ്റ് നേരിട്ട് റീഡയറക്ട് ചെയ്യുന്നതിന് പകരം ഫുൾ സ്ക്രീൻ Iframe-ൽ കാണിക്കുന്നു -->
+    <iframe id="appFrame" src="https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec"></iframe>
 
-    <!-- സുരക്ഷയ്ക്കായി ജാവാസ്ക്രിപ്റ്റ് വഴിയുള്ള റീഡയറക്ട് കൂടി ചേർക്കുന്നു -->
     <script>
-        setTimeout(function() {
-            window.location.replace("https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec");
-        }, 500);
+        // ഗൂഗിൾ സ്ക്രിപ്റ്റിൽ നിന്നും 'REGISTER_TOKEN' എന്ന മെസ്സേജ് വരുമ്പോൾ പ്രവർത്തിക്കുന്ന സ്മാർട്ട് കോഡ്
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'REGISTER_TOKEN') {
+                
+                // OneSignal-ൽ നിന്നും ടോക്കൺ എടുക്കുന്നു
+                let token = OneSignal.User.PushSubscription.id;
+                
+                if (token) {
+                    // സ്മാർട്ട് ചെക്കിങ്: Chrome-ൽ ടോക്കൺ മാറിയിട്ടുണ്ടോ എന്ന് നോക്കുന്നു
+                    let savedToken = localStorage.getItem("syncedTokenWeb");
+                    
+                    if (token !== savedToken) {
+                        // പുതിയ ടോക്കൺ ആണെങ്കിൽ ഫോണിൽ സേവ് ചെയ്ത ശേഷം Iframe-ലേക്ക് ടോക്കൺ കൈമാറുന്നു
+                        localStorage.setItem("syncedTokenWeb", token);
+                        let gasUrl = "https://script.google.com/macros/s/AKfycbwpaXjVKwhuJ0YcpoT5531CvxfevHrPcHqUlKuwwkMOZsTj1-zVlljdeYZ1r2SuURky/exec";
+                        document.getElementById('appFrame').src = gasUrl + "?token=" + token;
+                    } else {
+                        console.log("Web Token unchanged. Skipping Sheet update.");
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
